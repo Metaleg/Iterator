@@ -57,15 +57,42 @@ FileItem* Iterator::searchInDir() {
 }
 
 FileItem* Iterator::doSearch() {
-	return 0;
+	FileItem* a = NULL;
+
+	do {
+		if (it != NULL) {
+			a = it->doSearch();
+			if (a != NULL)
+				return a;
+			delete it;
+			it = NULL;
+		}
+
+		a = searchInDir();
+
+		if (a == NULL)
+			return NULL;
+		if (!a->isDir && comparison(a))
+			return a;
+		else
+			it = new Iterator(a->fMask + "\\" + a->fname);
+		delete a;
+	} while (1);
 }
 
 bool Iterator::hasMore() {
-	return 0;
+	if ((cache == NULL) && ((cache = doSearch()) == NULL))
+		return 0;
+	return 1;
 }
 
 FileItem* Iterator::next() {
-	return 0;
+	if (!hasMore())
+		throw "Not found\n";
+
+	FileItem* a = cache;
+	cache = doSearch();
+	return a;
 }
 
 void Iterator::get() {
