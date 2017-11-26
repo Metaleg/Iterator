@@ -19,12 +19,41 @@ Iterator::~Iterator() {
 //--------------------METHODS----------------------------------------
 
 bool Iterator::comparison(FileItem* a) {
+	string str1 = "*";
+	if (name == str1)
+		return 1;
+	if (a->fname == name)
+		return 1;
 	return 0;
 }
 
 FileItem* Iterator::searchInDir() {
+	FileItem *a = NULL;
+	struct _finddata_t file;
+	string str = Mask + "\\*", str1 = ".", str2 = "..";
+	bool i = false;
 
-	return 0;
+	if (hFind == NULL) {
+		if ((hFind = _findfirst(str.c_str(), &file)) == -1L)
+			return NULL;
+	}
+	else if ((_findnext(hFind, &file)) != 0)
+		return NULL;
+
+	a = new FileItem;
+
+	if (file.attrib & _A_SUBDIR)
+		i = true;
+
+	a->fname = file.name;
+	a->fMask = Mask;
+	a->isDir = i;
+
+	if ((a->fname == str1) || (a->fname == str2)) {
+		delete a;
+		a = searchInDir();
+	}
+	return a;
 }
 
 FileItem* Iterator::doSearch() {
